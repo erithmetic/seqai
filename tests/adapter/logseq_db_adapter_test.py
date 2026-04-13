@@ -8,16 +8,10 @@ from adapter.logseq_db_adapter import LogseqDBAdapter
 SAMPLE_DB_PATH = os.path.join(os.path.dirname(__file__), "../..", "sample_logseq_db")
 
 class TestLogseqDBAdapterReadAll:
-    """
-    Feature: Read logseq transit file from filesystem
-    """
-
     def test_given_a_transit_file_exists_when_reading_it_then_data_is_returned(self):
         adapter = LogseqDBAdapter(SAMPLE_DB_PATH)
         adapter.read_all()
         
-        print(adapter.db)
-
         assert adapter.db["69dcbbc8-1e3d-437e-80f5-ca52449bcfcb"].content == "Chroma is the open-source data infrastructure for AI. It comes with everything you need to get started built-in."
 
     def test_given_nonexistent_file_when_reading_it_then_error_is_raised(self):

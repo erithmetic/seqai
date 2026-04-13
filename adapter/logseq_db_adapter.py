@@ -12,6 +12,17 @@ class LogseqDBAdapter:
     node_db: dict[str, Block] = {}
 
     @staticmethod
+    def from_journal_path(journal_path: str) -> 'LogseqDBAdapter':
+        """
+        Factory method to create a LogseqDBAdapter instance from a journal path.
+
+        Args:
+            journal_path (str): Path to the user's journal directory (e.g., '/Users/erica/notes')
+        """
+        db_file_path = LogseqDBAdapter.db_file_path_from_journal_path(journal_path)
+        return LogseqDBAdapter(db_file_path)
+
+    @staticmethod
     def db_file_path_from_journal_path(journal_path: str) -> str:
         """
         Convert a user's journal path to logseq transit file path
@@ -39,20 +50,12 @@ class LogseqDBAdapter:
     def __init__(self, db_path):
         self.db_path = Path(db_path)
 
-    def read_all(self) -> dict:
+    def read_all(self):
         """
-        Read all logseq records
+        Read all logseq records into an in-memory database stored in the `db` attribute.
 
         Args:
             file_path (str): Path to the transit file. Can include ~ for home directory.
-
-        Returns:
-            Dict: a dictionary representation of the logseq graph
-
-        Raises:
-            FileNotFoundError: If the file does not exist.
-            IOError: If there's an error reading the file.
-            ValueError: If there's an error parsing the transit data.
         """
         if not self.db_path.exists():
             raise FileNotFoundError(f"Transit file not found: {self.db_path}")
@@ -62,8 +65,8 @@ class LogseqDBAdapter:
         
         with open(self.db_path, 'rb') as f:
             reader = Reader("json")
-            db = reader.read(f)
-            datoms = db.rep[self.kw("datoms")] 
+            transit_data = reader.read(f)
+            datoms = transit_data.rep[self.kw("datoms")] 
 
             for item in datoms:
                 rep = item.rep
