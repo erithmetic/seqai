@@ -26,9 +26,17 @@ class ChromaDBAdapter:
             print(f"Upserting block with id: {block.uuid} and content: {block.content}")
             self.collection.upsert(documents=[block.content], ids=[block.uuid])
 
-    def query(self, query_string: str):
+    def query(self, query_string: str, limit: int = 10) -> list[Block]:
         results = self.collection.query(
             query_texts=[query_string],
-            n_results=10
+            n_results=limit
         )
-        return results
+
+        blocks = []
+        for i in range(len(results['ids'])):
+            block = Block()
+            block.uuid = results['ids'][0][i]
+            block.content = results['documents'][0][i]
+            blocks.append(block)
+
+        return blocks

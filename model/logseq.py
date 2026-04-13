@@ -12,7 +12,7 @@ class Block:
     metadata: dict = {}
     content: str = None
 
-    def __init__(self, id, num):
+    def __init__(self, id = None, num = None):
         self.id = id
         self.num = num
     

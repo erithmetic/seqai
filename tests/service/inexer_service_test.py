@@ -29,6 +29,6 @@ class TestIndexerServiceIndex:
         results = vector_db_adapter.query("vector")
         print("Query results:", results)
 
-        assert str(results['documents'][0][0]).find("vector") > 0
+        assert str(results[0].content).find("vector") > 0
 
 
