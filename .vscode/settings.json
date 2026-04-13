@@ -1,0 +1,12 @@
+{
+  "editor.indentSize": "tabSize",
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "chat.tools.terminal.autoApprove": {
+    "/^python -m pytest tests/adapter/logseq_db_adapter_test\\.py -v$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/Users/erica/seqai/.venv/bin/python": true
+  },
+}
