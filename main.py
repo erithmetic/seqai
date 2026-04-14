@@ -1,22 +1,42 @@
 import argparse
-import os
+
+from mcp.server.fastmcp import FastMCP
+from pydantic_ai import Agent
+import logfire
 
 from adapter.chroma_db_adapter import ChromaDBAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
+
+from agents.logseq_agent import logseq_agent
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME, IndexerService
 
 class CommandHandler:
     def __init__(self, path):
         self.logseq_db = LogseqDBAdapter.from_journal_path(path)
-        self.vector_db = ChromaDBAdapter(COLLECTION_NAME, CHROMODB_PATH)
+        self.vector_db = ChromaDBAdapter(COLLECTION_NAME, CHROMADB_PATH)
         self.indexer = IndexerService(self.logseq_db, self.vector_db)
+
+    def configure_otel(self):
+        logfire.configure(send_to_logfire=False)  
+        logfire.instrument_pydantic_ai()
+        logfire.instrument_httpx(capture_all=True)
 
     def reindex(self):
         self.indexer.vector_db_adapter.destroy()
         self.indexer.index()
 
+    def cli(self):
+        self.configure_otel()
+        logseq_agent.to_cli_sync()
+
     def start(self):
-        self.indexer.index()
+        self.configure_otel()
+
+        print("Starting SeqAI Pydantic MCP server...")
+        self.vector_db.connect()
+
+        server = FastMCP('Logseq MCP Server')
+        server.run()
 
 def main():
     print("Hello, SeqAI!")
@@ -24,15 +44,21 @@ def main():
     parser = argparse.ArgumentParser(
         prog="seqai",
         description="Make your logseq notes searchable with AI")
-    parser.add_argument("-i", "--index", action="store_true", help="Re-index the search database")
     parser.add_argument("-p", "--path", default="/Users/erica/notes", help="Specify the path to your logseq journal directory (e.g., '/Users/erica/notes')")
+    subparsers = parser.add_subparsers(dest="command")
+
+    subparsers.add_parser("cli")
+    subparsers.add_parser("server")
+    subparsers.add_parser("reindex")
     args = parser.parse_args()
 
     command_handler = CommandHandler(args.path)
 
-    if args.index:
+    if args.command == "reindex":
         command_handler.reindex()
-    else:
+    elif args.command == "cli":
+        command_handler.cli()
+    elif args.command == "server":
         command_handler.start()
 
 if __name__ == "__main__":

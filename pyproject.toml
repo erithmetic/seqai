@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "chromadb",
-    "transit-python2"
+    "transit-python2",
+    "pydantic-ai[evals,mcp,cli,google]",
+    "pydantic-evals>=1.80.0",
 ]
 
 [project.optional-dependencies]

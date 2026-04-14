@@ -1,3 +1,4 @@
+.env
 .DS_Store
 db/*
 
@@ -11,3 +12,4 @@ wheels/
 
 # Virtual environments
 .venv
+
