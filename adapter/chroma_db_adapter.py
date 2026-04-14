@@ -23,7 +23,7 @@ class ChromaDBAdapter:
 
     def upsert(self, block: Block):
         if block.content is not None:
-            print(f"Upserting block with id: {block.uuid} and content: {block.content}")
+            # print(f"Upserting block with id: {block.uuid} and content: {block.content}")
             self.collection.upsert(documents=[block.content], ids=[block.uuid])
 
     def query(self, query_string: str, limit: int = 10) -> list[Block]:

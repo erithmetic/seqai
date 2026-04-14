@@ -77,7 +77,7 @@ class LogseqDBAdapter:
             self.db[block.uuid] = block
                 
     def read_datom(self, datom: Datom):
-        print(f"{datom.num} {datom.id} {datom.keyword} {datom.value}")
+        # print(f"{datom.num} {datom.id} {datom.keyword} {datom.value}")
 
         if datom.num not in self.node_db:
             self.node_db[datom.num] = Block(datom.id, datom.num)
