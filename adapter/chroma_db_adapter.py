@@ -5,6 +5,7 @@ class ChromaDBAdapter:
     collection: chromadb.Collection = None
 
     def __init__(self, collection_name: str, db_path: str):
+        self.db_path = db_path
         self.db = chromadb.PersistentClient(path=db_path)
         self.collection_name = collection_name
     
@@ -12,7 +13,6 @@ class ChromaDBAdapter:
         try:
             self.collection = self.db.create_collection(self.collection_name)
         except Exception as e:
-            print(f"Collection '{self.collection_name}' already exists. Using existing collection.")
             self.collection = self.db.get_collection(self.collection_name)
     
     def destroy(self):
@@ -32,7 +32,11 @@ class ChromaDBAdapter:
         )
 
         blocks = []
-        for i in range(len(results['ids'])):
+
+        if len(results['ids']) == 0 or len(results['ids'][0]) == 0:
+            return blocks
+
+        for i in range(len(results['ids'][0])):
             block = Block(
                 uuid=results['ids'][0][i],
                 content=results['documents'][0][i],

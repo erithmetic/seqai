@@ -7,12 +7,9 @@ from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME
 from service.query_service import QueryService
 
 INSTRUCTIONS = '''
-    You are a helpful assistant for querying a user's logseq notes.
-    You have access to the query_logseq tool that allows you to search the user's notes and retrieve relevant information.
-    The results include a URL to the source that should be included in your answer to the user.
-    The URL is prefixed with "logseq://".
-    Always include the source URL in your response.
-    If you cannot find the answer in the notes, say you don't know instead of making something up.
+You are a helpful assistant for searching and summarizing a user's logseq notes.
+Always include the content and source URLs in your response.
+If you cannot find the answer in the notes, say you don't know instead of making something up.
 '''
 
 class QueryRequest(BaseModel):
@@ -35,10 +32,10 @@ class Result:
 
 class LogseqAgent():
     @staticmethod
-    def load():
-        me = LogseqAgent(ChromaDBAdapter(COLLECTION_NAME, CHROMADB_PATH))
+    def load(vector_db_adapter: ChromaDBAdapter) -> Agent:
+        me = LogseqAgent(vector_db_adapter)
         return Agent(
-            'anthropic:claude-sonnet-4-5',
+            'anthropic:claude-haiku-4-5',
             instructions=INSTRUCTIONS,
             instrument=True,
             tools=[me.query_logseq]
@@ -57,4 +54,3 @@ class LogseqAgent():
             count=len(result_blocks),
             blocks=result_blocks
         )
-

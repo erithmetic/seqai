@@ -2,13 +2,17 @@ import argparse
 
 from mcp.server.fastmcp import FastMCP
 from pydantic_ai import Agent
-import logfire
 
 from adapter.chroma_db_adapter import ChromaDBAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
 from agents.logseq_agent import LogseqAgent
+from service.configure_otel_service import ConfigureOTELService
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME, IndexerService
 from service.query_service import QueryService
+
+from tests.setup import reindex_sample_db, vector_db_adapter_for_sample_db
+
+SAMPLE_DB_PATH = "db/test_chromadb"
 
 class CommandHandler:
     def __init__(self, path):
@@ -17,20 +21,25 @@ class CommandHandler:
         self.indexer = IndexerService(self.logseq_db, self.vector_db)
 
     def configure_otel(self):
-        logfire.configure(send_to_logfire=False)  
-        logfire.instrument_pydantic_ai()
-        logfire.instrument_httpx(capture_all=True)
+        ConfigureOTELService().run()
 
     def reindex(self):
+        print("Reindexing logseq notes, this may take a while...")
         self.indexer.vector_db_adapter.destroy()
         self.indexer.index()
 
     def cli(self):
         self.configure_otel()
-        LogseqAgent.load().to_cli_sync()
+        LogseqAgent.load(self.vector_db).to_cli_sync()
 
-    def semantic_search(self):
+    def semantic_search(self, test_mode: bool = False):
         self.configure_otel()
+
+        self.vector_db = self.vector_db
+        if test_mode:
+            reindex_sample_db()
+            self.vector_db = vector_db_adapter_for_sample_db()
+
         query_service = QueryService(self.vector_db)
 
         while True:
@@ -61,11 +70,11 @@ def main():
         description="Make your logseq notes searchable with AI")
     parser.add_argument("-p", "--path", default="/Users/erica/notes", help="Specify the path to your logseq journal directory (e.g., '/Users/erica/notes')")
     subparsers = parser.add_subparsers(dest="command")
-
     subparsers.add_parser("cli")
     subparsers.add_parser("server")
     subparsers.add_parser("reindex")
-    subparsers.add_parser("semantic-search")
+    search = subparsers.add_parser("semantic-search")
+    search.add_argument("--test", action="store_true", help="Run in test mode with sample data")
     args = parser.parse_args()
 
     command_handler = CommandHandler(args.path)
@@ -77,7 +86,7 @@ def main():
     elif args.command == "server":
         command_handler.start()
     elif args.command == "semantic-search":
-        command_handler.semantic_search()
+        command_handler.semantic_search(args.test)
 
 if __name__ == "__main__":
     main()

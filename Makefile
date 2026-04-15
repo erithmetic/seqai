@@ -14,6 +14,8 @@ reindex:
 
 search:
 	uv run --env-file .env python main.py semantic-search
+search-test:
+	uv run --env-file .env python main.py semantic-search --test
 
 test:
 	uv run pytest --tb=long
