@@ -1,4 +1,4 @@
-.PHONY: cli server evals test install-dev search
+.PHONY: cli server evals test install-dev search update-sample-db
 
 cli:
 	uv run --env-file .env python main.py cli
@@ -20,3 +20,6 @@ test:
 	
 install-dev:
 	uv sync --all-extras
+
+update-sample-db:
+	cp ../.logseq/graphs/logseq_local_++Users++erica++seqai++sample_logseq.transit ./sample_logseq_db
