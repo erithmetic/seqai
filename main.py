@@ -6,9 +6,9 @@ import logfire
 
 from adapter.chroma_db_adapter import ChromaDBAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
-
-from agents.logseq_agent import logseq_agent
+from agents.logseq_agent import LogseqAgent
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME, IndexerService
+from service.query_service import QueryService
 
 class CommandHandler:
     def __init__(self, path):
@@ -27,7 +27,20 @@ class CommandHandler:
 
     def cli(self):
         self.configure_otel()
-        logseq_agent.to_cli_sync()
+        LogseqAgent.load().to_cli_sync()
+
+    def semantic_search(self):
+        self.configure_otel()
+        query_service = QueryService(self.vector_db)
+
+        while True:
+            query = input("Enter your search query (or 'exit' to quit): ")
+            if query.lower() == 'exit':
+                break
+            blocks = query_service.query(query, limit=10)
+            print(f"Found {len(blocks)} results:")
+            for block in blocks:
+                print(f"- {block.content} (URL: {block.url()})")
 
     def start(self):
         self.configure_otel()
@@ -39,8 +52,6 @@ class CommandHandler:
         server.run()
 
 def main():
-    print("Hello, SeqAI!")
-
     parser = argparse.ArgumentParser(
         prog="seqai",
         description="Make your logseq notes searchable with AI")
@@ -50,6 +61,7 @@ def main():
     subparsers.add_parser("cli")
     subparsers.add_parser("server")
     subparsers.add_parser("reindex")
+    subparsers.add_parser("semantic-search")
     args = parser.parse_args()
 
     command_handler = CommandHandler(args.path)
@@ -60,6 +72,8 @@ def main():
         command_handler.cli()
     elif args.command == "server":
         command_handler.start()
+    elif args.command == "semantic-search":
+        command_handler.semantic_search()
 
 if __name__ == "__main__":
     main()
