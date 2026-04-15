@@ -7,6 +7,7 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "/Users/erica/seqai/.venv/bin/python": true
+    "/Users/erica/seqai/.venv/bin/python": true,
+    "make": true
   },
 }
