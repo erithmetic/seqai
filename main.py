@@ -34,13 +34,17 @@ class CommandHandler:
         query_service = QueryService(self.vector_db)
 
         while True:
-            query = input("Enter your search query (or 'exit' to quit): ")
-            if query.lower() == 'exit':
+            # exit when user types exit or CTRL-D
+            try:
+                query = input("Enter your search query (or 'exit' to quit): ")
+            except EOFError:
+                break
+            if query.lower() == 'exit' or query == '':
                 break
             blocks = query_service.query(query, limit=10)
             print(f"Found {len(blocks)} results:")
             for block in blocks:
-                print(f"- {block.content} (URL: {block.url()})")
+                print(f"- {block.match_value:.2f} {block.content} (URL: {block.url()})")
 
     def start(self):
         self.configure_otel()
