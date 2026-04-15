@@ -3,13 +3,13 @@ from pathlib import Path
 from transit.reader import Reader
 from transit.transit_types import Keyword
 
-from model.logseq import Block, Datom
+from model.logseq import Block, Datom, Node, NodeType
 
-LogseqDB = dict[str, Block]
+LogseqDB = dict[str, Node]
 
 class LogseqDBAdapter:
     db: LogseqDB = {}
-    node_db: dict[str, Block] = {}
+    node_db: dict[str, Node] = {}
 
     @staticmethod
     def from_journal_path(journal_path: str) -> 'LogseqDBAdapter':
@@ -73,14 +73,43 @@ class LogseqDBAdapter:
                 datom = Datom(rep[0], rep[1], rep[2], rep[3])
                 self.read_datom(datom)
         
-        for _, block in self.node_db.items():
-            self.db[block.uuid] = block
+        for _, node in self.node_db.items():
+            if len(str(node.uuid)) > 0:
+                self.db[node.uuid] = node
+    
+    def read_node_type(self, keyword: Keyword) -> NodeType:
+        kw_str = str(keyword)
+        if kw_str.startswith("block/"):
+            return NodeType.BLOCK
+        elif kw_str.startswith("ast/"):
+            return NodeType.AST
+        elif kw_str.startswith("db/"):
+            return NodeType.DB
+        elif kw_str.startswith("page/"):
+            return NodeType.PAGE
+        elif kw_str.startswith("file/"):
+            return NodeType.FILE
+        elif kw_str.startswith("schema/"):
+            return NodeType.SCHEMA
+        else:
+            raise ValueError(f"Unknown node type for keyword: {keyword}")
+    
+    def parse_node(self, datom: Datom) -> Node:
+        node_type = self.read_node_type(datom.keyword)
+
+        if node_type == NodeType.BLOCK:
+            return Block(id=datom.id, num=datom.num)
+
+        return Node(type=node_type, id=datom.id, num=datom.num)
                 
     def read_datom(self, datom: Datom):
         # print(f"{datom.num} {datom.id} {datom.keyword} {datom.value}")
 
         if datom.num not in self.node_db:
-            self.node_db[datom.num] = Block(datom.id, datom.num)
+            self.node_db[datom.num] = self.parse_node(datom)
+
+        if self.node_db[datom.num].type != NodeType.BLOCK:
+            return
 
         if datom.keyword == self.kw("block/uuid"):
             self.node_db[datom.num].uuid = str(datom.value)
@@ -89,6 +118,9 @@ class LogseqDBAdapter:
 
     def kw(self, key: str):
         return Keyword(key)
+    
+    def all_blocks(self) -> list[Block]:
+        return [node for node in self.db.values() if node.type == NodeType.BLOCK]
 
 
 # def has_method(o, name):

@@ -1,4 +1,6 @@
 import os
+
+from httpx import put
 from adapter.chroma_db_adapter import ChromaDBAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
 
@@ -14,5 +16,5 @@ class IndexerService:
         self.db_adapter.read_all()
         self.vector_db_adapter.connect()
 
-        for _, block in self.db_adapter.db.items():
-            self.vector_db_adapter.upsert(block)
+        blocks = [block for block in self.db_adapter.all_blocks() if block.content != None and len(str(block.content)) > 0]
+        self.vector_db_adapter.upsert(blocks)
