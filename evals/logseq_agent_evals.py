@@ -1,11 +1,13 @@
-# set module path to project root for imports
+import re
 import sys
 from pathlib import Path
 
+# set module path to project root for imports
 sys.path.append(str(Path(__file__).parent.parent))
-from tests.setup import reindex_sample_db, vector_db_adapter_for_sample_db
 
-from agents.logseq_agent import LogseqAgent, logseq_agent, query_logseq
+from tests.setup import reindex_sample_db
+
+from agents.logseq_agent import LogseqAgent
 from dataclasses import dataclass
 from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import EvaluationReason, Evaluator, EvaluatorContext
@@ -24,6 +26,20 @@ class ContainsAny(Evaluator):
             else ("Missing all of: " + str(self.needles)),
         )
 
+@dataclass
+class ContainsLink(Evaluator):
+    def evaluate(self, ctx: EvaluatorContext) -> EvaluationReason:
+        out = (ctx.output or "")
+        pattern = r'logseq://[^\s]+'
+        match = re.search(pattern, out)
+        ok = match is not None
+        return EvaluationReason(
+            value=ok,
+            reason=f"Found link: {match.group(0)}"
+            if ok
+            else f"Missing link",
+        )
+
 dataset = Dataset(
     name='logseq_agent_tests',
     cases=[
@@ -38,30 +54,16 @@ dataset = Dataset(
                         "tuples",
                     ]
                 ),
+                ContainsLink(),
             ),
         ),
     ],
 )
 
-def main(input: str) -> str:
-    agent = LogseqAgent(vector_db_adapter_for_sample_db())
-    blocks = agent.query_logseq(input, 5).blocks
-    context = "\n\n---\n\n".join(block.content for block in blocks)
-    prompt = f"""Use the CONTEXT to answer the USER. If the answer isn't in the context, say you don't know.
-
-    CONTEXT:
-    {context}
-
-    USER:
-    {input}
-    """
-    result = logseq_agent.run_sync(prompt)
-    return result.output
-
 def run_evals() -> None:
     reindex_sample_db()
-
-    report = dataset.evaluate_sync(main)
+    agent = LogseqAgent.load()
+    report = dataset.evaluate_sync(lambda msg: agent.run_sync(msg).output)
     report.print(include_reasons=True, include_input=True, include_output=True)
 
 
