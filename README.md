@@ -19,6 +19,10 @@ To run SeqAI, use the following commands with the path to your Logseq journal di
 
 The `-p` or `--path` parameter specifies the path to your Logseq journal directory. The default path is `$HOME/notes` if not specified.
 
+## Accessing from Claude Desktop
+
+There is no MCP bundle for this yet, so you can clone this repo and copy/paste the config from the `claude-mcp`.json file that runs a shell script.
+
 ## How it works
 
 This MCP server indexes your journal into a local ChromaDB vector database and provides MCP tools for searching and conversing with your journal. You can connect your AI/chatbot to this MCP server.
