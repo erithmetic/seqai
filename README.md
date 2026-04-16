@@ -29,6 +29,8 @@ There is no MCP bundle for this yet, so you can clone this repo and copy/paste t
 
 This MCP server indexes your journal into a local ChromaDB vector database and provides MCP tools for searching and conversing with your journal. You can connect your AI/chatbot to this MCP server.
 
+Instead of indexing raw markdown, this agent uses logseq's Datomic graph database.
+
 So far, you are required to manually re-index on updates.
 
 ## Future Improvements
