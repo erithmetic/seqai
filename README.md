@@ -10,6 +10,8 @@ uv sync
 
 ## Running
 
+This defaults to using claude haiku for the agent, so be sure to export `ANTHROPIC_API_KEY`. this can be placed in a .env file.
+
 To run SeqAI, use the following commands with the path to your Logseq journal directory:
 
 - **Start the MCP server**: `python main.py -p /path/to/your/logseq/journal server`
