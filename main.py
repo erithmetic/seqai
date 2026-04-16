@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from mcp.server.fastmcp import FastMCP
 from pydantic_ai import Agent
@@ -6,6 +7,7 @@ from pydantic_ai import Agent
 from adapter.chroma_db_adapter import ChromaDBAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
 from agents.logseq_agent import LogseqAgent
+from server import server
 from service.configure_otel_service import ConfigureOTELService
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME, IndexerService
 from service.query_service import QueryService
@@ -54,21 +56,23 @@ class CommandHandler:
             print(f"Found {len(blocks)} results:")
             for block in blocks:
                 print(f"- {block.match_value:.2f} {block.content} (URL: {block.url()})")
-
+    
     def start(self):
+        print(f"Starting SeqAI Pydantic MCP server...")
         self.configure_otel()
-
-        print("Starting SeqAI Pydantic MCP server...")
         self.vector_db.connect()
+        server.run('streamable-http')
 
-        server = FastMCP('Logseq MCP Server')
-        server.run()
 
 def main():
     parser = argparse.ArgumentParser(
         prog="seqai",
         description="Make your logseq notes searchable with AI")
-    parser.add_argument("-p", "--path", default="/Users/erica/notes", help="Specify the path to your logseq journal directory (e.g., '/Users/erica/notes')")
+
+    home = os.getenv("HOME")
+    parser.add_argument("-p", "--path",
+                        default=f"{home}/notes",
+                        help="Specify the path to your logseq journal directory")
     subparsers = parser.add_subparsers(dest="command")
     subparsers.add_parser("cli")
     subparsers.add_parser("server")

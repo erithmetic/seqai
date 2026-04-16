@@ -11,11 +11,14 @@ uv sync
 
 ## Running
 
-```sh
-python main.py <name_of_logseq_graph>
-```
+To run SeqAI, use the following commands with the path to your Logseq journal directory:
 
-The `name_of_logseq_graph` parameter is used to look up the graph directory in your `~/.logseq` root directory that contains the transit DB version of your journal.
+- **Start the MCP server**: `python main.py -p /path/to/your/logseq/journal server`
+- **Run CLI**: `python main.py -p /path/to/your/logseq/journal cli`
+- **Reindex notes**: `python main.py -p /path/to/your/logseq/journal reindex`
+- **Semantic search**: `python main.py -p /path/to/your/logseq/journal semantic-search`
+
+The `-p` or `--path` parameter specifies the path to your Logseq journal directory containing the transit DB version of your journal. The default path is `/Users/erica/notes` if not specified.
 
 ## How it works
 
