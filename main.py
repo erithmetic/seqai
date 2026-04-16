@@ -58,10 +58,9 @@ class CommandHandler:
                 print(f"- {block.match_value:.2f} {block.content} (URL: {block.url()})")
     
     def start(self):
-        print(f"Starting SeqAI Pydantic MCP server...")
         self.configure_otel()
         self.vector_db.connect()
-        server.run('streamable-http')
+        server.run('stdio')
 
 
 def main():

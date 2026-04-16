@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "logseq": {
+        "command": "/bin/sh",
+        "args": ["/Users/erica/seqai/claude.sh"]
+        }
+    }
+}
