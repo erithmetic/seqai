@@ -4,7 +4,7 @@ import os
 from mcp.server.fastmcp import FastMCP
 from pydantic_ai import Agent
 
-from adapter.chroma_db_adapter import ChromaDBAdapter
+from adapter.logseq_semantic_search_adapter import LogseqSemanticSearchAdapter
 from adapter.logseq_db_adapter import LogseqDBAdapter
 from agents.logseq_agent import LogseqAgent
 from server import server
@@ -12,37 +12,37 @@ from service.configure_otel_service import ConfigureOTELService
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME, IndexerService
 from service.query_service import QueryService
 
-from tests.setup import reindex_sample_db, vector_db_adapter_for_sample_db
+from tests.setup import reindex_sample_db, logseq_search_adapter_for_sample_db
 
 SAMPLE_DB_PATH = "db/test_chromadb"
 
 class CommandHandler:
     def __init__(self, path):
         self.logseq_db = LogseqDBAdapter.from_journal_path(path)
-        self.vector_db = ChromaDBAdapter(COLLECTION_NAME, CHROMADB_PATH)
-        self.indexer = IndexerService(self.logseq_db, self.vector_db)
+        self.logseq_search = LogseqSemanticSearchAdapter(COLLECTION_NAME, CHROMADB_PATH)
+        self.indexer = IndexerService(self.logseq_db, self.logseq_search)
 
     def configure_otel(self):
         ConfigureOTELService().run()
 
     def reindex(self):
         print("Reindexing logseq notes, this may take a while...")
-        self.indexer.vector_db_adapter.destroy()
+        self.indexer.logseq_search_adapter.destroy()
         self.indexer.index()
 
     def cli(self):
         self.configure_otel()
-        LogseqAgent.load(self.vector_db).to_cli_sync()
+        LogseqAgent.load(self.logseq_search).to_cli_sync()
 
     def semantic_search(self, test_mode: bool = False):
         self.configure_otel()
 
-        self.vector_db = self.vector_db
+        self.logseq_search = self.logseq_search
         if test_mode:
             reindex_sample_db()
-            self.vector_db = vector_db_adapter_for_sample_db()
+            self.logseq_search = logseq_search_adapter_for_sample_db()
 
-        query_service = QueryService(self.vector_db)
+        query_service = QueryService(self.logseq_search)
 
         while True:
             # exit when user types exit or CTRL-D
@@ -59,7 +59,7 @@ class CommandHandler:
     
     def start(self):
         self.configure_otel()
-        self.vector_db.connect()
+        self.logseq_search.connect()
         server.run('stdio')
 
 

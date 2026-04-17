@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
-from adapter.chroma_db_adapter import ChromaDBAdapter
+from adapter.logseq_semantic_search_adapter import LogseqSemanticSearchAdapter
 from model.logseq import Block
 from service.indexer_service import CHROMADB_PATH, COLLECTION_NAME
 from service.query_service import QueryService
@@ -33,17 +33,18 @@ class Result:
 
 class LogseqAgent():
     @staticmethod
-    def load(vector_db_adapter: ChromaDBAdapter) -> Agent:
-        me = LogseqAgent(vector_db_adapter)
+    def load(logseq_search_adapter: LogseqSemanticSearchAdapter) -> Agent:
+        me = LogseqAgent(logseq_search_adapter)
         return Agent(
             'anthropic:claude-haiku-4-5',
             instructions=INSTRUCTIONS,
             instrument=True,
-            tools=[me.query_logseq]
+            tools=[me.query_logseq],
+            history_processors=[]
         )
 
-    def __init__(self, vector_db_adapter: ChromaDBAdapter):
-        self.query_service = QueryService(vector_db_adapter)
+    def __init__(self, logseq_search_adapter: LogseqSemanticSearchAdapter):
+        self.query_service = QueryService(logseq_search_adapter)
 
     def query_logseq(self, request: QueryRequest) -> QueryRequest:
         blocks = self.query_service.query(request.query, request.limit)

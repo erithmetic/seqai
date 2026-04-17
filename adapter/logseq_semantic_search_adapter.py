@@ -1,7 +1,7 @@
 import chromadb
 from model.logseq import Block
 
-class ChromaDBAdapter:
+class LogseqSemanticSearchAdapter:
     collection: chromadb.Collection = None
 
     def __init__(self, collection_name: str, db_path: str):

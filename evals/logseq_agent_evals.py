@@ -6,7 +6,7 @@ from pathlib import Path
 # set module path to project root for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from tests.setup import reindex_sample_db, vector_db_adapter_for_sample_db
+from tests.setup import reindex_sample_db, logseq_search_adapter_for_sample_db
 
 from agents.logseq_agent import LogseqAgent
 from dataclasses import dataclass
@@ -79,7 +79,7 @@ dataset = Dataset(
 def run_evals() -> None:
     ConfigureOTELService().run()
     reindex_sample_db()
-    agent = LogseqAgent.load(vector_db_adapter_for_sample_db())
+    agent = LogseqAgent.load(logseq_search_adapter_for_sample_db())
     report = dataset.evaluate_sync(lambda msg: agent.run_sync(msg).output)
     report.print(include_reasons=True, include_input=True, include_output=True)
 

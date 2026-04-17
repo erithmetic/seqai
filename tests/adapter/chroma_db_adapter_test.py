@@ -1,11 +1,11 @@
-from adapter.chroma_db_adapter import ChromaDBAdapter
+from adapter.logseq_semantic_search_adapter import LogseqSemanticSearchAdapter
 from model.logseq import Block
 
 SAMPLE_DB_PATH="../sample_logseq_db"
 
 class TestChromaDBAdapter:
     def test_add_params(self):
-        adapter = ChromaDBAdapter("test_collection", SAMPLE_DB_PATH)
+        adapter = LogseqSemanticSearchAdapter("test_collection", SAMPLE_DB_PATH)
         blocks = [
             Block(uuid="1", content="This is the first block."),
             Block(uuid="2", content="This is the second block."),

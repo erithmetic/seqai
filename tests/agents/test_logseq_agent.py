@@ -1,4 +1,4 @@
-from tests.setup import reindex_sample_db, vector_db_adapter_for_sample_db
+from tests.setup import reindex_sample_db, logseq_search_adapter_for_sample_db
 
 from agents.logseq_agent import LogseqAgent, QueryRequest
 
@@ -7,7 +7,7 @@ class TestLogseqAgentQueryLogseq:
     def test_returns_valid_results(self):
         reindex_sample_db()  # Ensure the sample DB is indexed before testing
 
-        agent = LogseqAgent(vector_db_adapter_for_sample_db())
+        agent = LogseqAgent(logseq_search_adapter_for_sample_db())
         response = agent.query_logseq(QueryRequest(query="what is a vector?", limit=5))
 
         assert response.count > 0, "Expected at least one result from the query"
